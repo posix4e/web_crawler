@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <regex>
 #include <set>
+#include "gumbo.h"
 
 #include "URLFinder.h"
 
@@ -23,23 +24,32 @@ void URLFinder::appendInput(const std::string newInput) {
     input.append(newInput);
 }
 
-std::vector<std::string> const URLFinder::getNewURLS() {
-    std::vector<std::string> extractedURLS;
-    std::smatch m;
-    std::regex hrefRegex("<a\\s+(?:[^>]*?\\s+)?href=\"([^\"]*)\"");
-    while (std::regex_search(this->input, m, hrefRegex)) {
-        for (std::string x:m) {
-            if (this->urlsVisited.count(x) == 0 &&
-                boost::starts_with(x, "http")) {
-                extractedURLS.push_back(x);
-            }
-            this->input = m.suffix().str();
-        }
+static std::vector<std::string> search_for_links(GumboNode* node) {
+    std::vector<std::string> links;
+    if (node->type != GUMBO_NODE_ELEMENT) {
+        return links;
     }
-    for (auto x:extractedURLS){
-        std::cout << "we extracted the following urls" << x << std::endl;
+    GumboAttribute* href;
+    if (node->v.element.tag == GUMBO_TAG_A &&
+        (href = gumbo_get_attribute(&node->v.element.attributes, "href"))) {
+        links.push_back(href->value);
     }
 
-    return extractedURLS;
+    GumboVector* children = &node->v.element.children;
+    for (unsigned int i = 0; i < children->length; ++i) {
+        std::vector<std::string> childrenLinks = search_for_links(static_cast<GumboNode*>(children->data[i]));
+        for (auto url:childrenLinks){
+            if (url.find("http") == 0) {
+                links.push_back(url);
+            }
+        }
+    }
+    return links;
+}
+
+std::vector<std::string> const URLFinder::getNewURLS() {
+    GumboOutput* output = gumbo_parse(this->input.c_str());
+
+    return search_for_links(output->root);
 }
 
