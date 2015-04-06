@@ -14,7 +14,7 @@
  * A class which gets all of the links out of a webpage
  */
 URLFinder::URLFinder(std::string inputString,
-                          std::set<std::string> &urlsAlreadyVisited) {
+                     std::set<std::string> &urlsAlreadyVisited) {
     this->input = inputString;
     this->urlsVisited = urlsAlreadyVisited;
 }

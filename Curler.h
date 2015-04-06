@@ -14,7 +14,8 @@ class Curler {
 
 public:
     Curler(char const *url, std::set<std::string> urlsVisited);
-    std::vector <std::string> getURLS();
+
+    std::vector<std::string> getURLS();
 };
 
 #endif //WEB_CRAWLER_CURLER_H

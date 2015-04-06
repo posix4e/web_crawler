@@ -20,8 +20,8 @@ int main(int argc, char *argv[]) {
         urlsVisited.insert(url);
         Curler curler(url.c_str(), urlsVisited);
         std::vector<std::string> foundUrls = curler.getURLS();
-        for (auto url:foundUrls){
-            if (urlsVisited.count(url) > 0){
+        for (auto url:foundUrls) {
+            if (urlsVisited.count(url) > 0) {
                 urls.push_back(url);
             }
         }

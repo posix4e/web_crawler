@@ -3,13 +3,12 @@
 //
 
 #include "Curler.h"
-#include <string>
-#include <vector>
 #include <curl/curl.h>
 #include <iostream>
 #include "URLFinder.h"
 
 static std::string readBuffer;
+
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 
 /**
@@ -19,7 +18,7 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
  *
  */
 Curler::Curler(char const *url, std::set<std::string> urlsVisited) :
- urlsVisited_(urlsVisited) {
+        urlsVisited_(urlsVisited) {
     readBuffer.clear();
     CURL *curl;
     CURLcode res;
@@ -38,7 +37,7 @@ Curler::Curler(char const *url, std::set<std::string> urlsVisited) :
     curl_easy_cleanup(curl);
 }
 
-std::vector<std::string> Curler::getURLS(){
+std::vector<std::string> Curler::getURLS() {
     URLFinder urlFinder(readBuffer, this->urlsVisited_);
     return urlFinder.getNewURLS();
 }
