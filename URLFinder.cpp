@@ -36,6 +36,10 @@ std::vector<std::string> const URLFinder::getNewURLS() {
             this->input = m.suffix().str();
         }
     }
+    for (auto x:extractedURLS){
+        std::cout << "we extracted the following urls" << x << std::endl;
+    }
+
     return extractedURLS;
 }
 
