@@ -1,15 +1,13 @@
 #include <curl/curl.h>
 #include <iostream>
-#include <string>
-#include <regex>
-#include <boost/algorithm/string/predicate.hpp>
 #include <set>
+#include <vector>
+#include "URLFinder.h"
 
 namespace {
     const size_t BUFFER_SIZE = 1024;
 }
 
-std::vector<std::string> const getURLSFromHRefs(std::string buffer);
 std::set<std::string> urlsVisited;
 
 static std::string readBuffer;
@@ -38,24 +36,8 @@ std::vector<std::string> const addUrlToWorkQueue(const char *url) {
 
     /* always cleanup */
     curl_easy_cleanup(curl);
-    return getURLSFromHRefs(readBuffer);
-}
-
-std::vector<std::string> const getURLSFromHRefs(const std::string buffer) {
-    std::vector<std::string> extractedURLS;
-    std::smatch m;
-    std::regex hrefRegex("<a\\s+(?:[^>]*?\\s+)?href=\"([^\"]*)\"");
-    while (std::regex_search(readBuffer, m, hrefRegex)) {
-        for(std::string x:m){
-            if (urlsVisited.count(x) == 0 && boost::starts_with(x, "http")){
-                std::cout << "regex_search"  << x << std::endl;
-
-                extractedURLS.push_back(x);
-            }
-            readBuffer = m.suffix().str();
-        }
-    }
-    return extractedURLS;
+    URLFinder urlFinder(readBuffer, urlsVisited);
+    return urlFinder.getNewURLS();
 }
 
 int main(int argc, char *argv[]) {
@@ -65,7 +47,6 @@ int main(int argc, char *argv[]) {
         std::string url = urls.back();
         urls.pop_back();
         urlsVisited.insert(url);
-        std::cout << "foo" << std::endl;
 
         std::vector<std::string> foundUrls = addUrlToWorkQueue(url.c_str());
         for (auto url:foundUrls){
