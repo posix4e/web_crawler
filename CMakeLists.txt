@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(web_crawler)
 set(SOURCE_FILES main.cpp)
-add_executable(web_crawler ${SOURCE_FILES} URLFinder.cpp URLFinder.h)
+add_executable(web_crawler ${SOURCE_FILES} URLFinder.cpp URLFinder.h Curler.cpp Curler.h)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package (CURL)
 if (CURL_FOUND)
