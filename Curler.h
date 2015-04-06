@@ -17,5 +17,4 @@ public:
     std::vector <std::string> getURLS();
 };
 
-
 #endif //WEB_CRAWLER_CURLER_H

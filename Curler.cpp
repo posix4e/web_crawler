@@ -43,7 +43,6 @@ std::vector<std::string> Curler::getURLS(){
     return urlFinder.getNewURLS();
 }
 
-
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
     readBuffer.append((char const *) contents, realsize);
