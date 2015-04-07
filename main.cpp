@@ -68,11 +68,11 @@ int main(int argc, char *argv[]) {
                 std::cout << "nothing to pop" << std::endl;
             }
         } else if (futures.size() > 0) {
-            std::vector<std::future<std::string>> futuresToProcess;
-            futures.swap(futuresToProcess);
             while(numberOfDownloaders > NUMBER_OF_DOWNLOADERS){
                 std::cout << "Waiting for downloaders to catch up" << numberOfDownloaders << std::endl;
             }
+            std::vector<std::future<std::string>> futuresToProcess;
+            futures.swap(futuresToProcess);
         } else {
             std::cout << "Doing nothing" << std::endl;
         }

@@ -21,7 +21,7 @@ static size_t staticFunction(void *buffer, size_t size, size_t nmemb, void *f) {
 Curler::Curler(const char *url,
                std::set<std::string> urlsVisited) :
         urlsVisited_(urlsVisited) {
-    std::cerr << "We are now downloading" << url << std::endl;
+    std::cerr << "<" ;
     CURL *curl;
     CURLcode res;
     curl = curl_easy_init();
@@ -38,7 +38,7 @@ Curler::Curler(const char *url,
 
     /* always cleanup */
     curl_easy_cleanup(curl);
-    std::cerr << "We are done downloading" << url << std::endl;
+    std::cerr << ">";
 
 }
 
