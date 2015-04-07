@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
                 std::cout << "nothing to pop" << std::endl;
             }
         } else if (futures.size() > 0) {
-            size_t halfPos = futures.size() / 2;
             std::vector<std::future<std::string>> futuresToProcess;
             futures.swap(futuresToProcess);
             while(numberOfDownloaders > NUMBER_OF_DOWNLOADERS){
