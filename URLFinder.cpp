@@ -50,6 +50,8 @@ static std::vector<std::string> search_for_links(GumboNode* node) {
 std::vector<std::string> const URLFinder::getNewURLS() {
     GumboOutput* output = gumbo_parse(this->input.c_str());
 
-    return search_for_links(output->root);
+    std::vector<std::string> links = search_for_links(output->root);
+    gumbo_destroy_output(&kGumboDefaultOptions, output);
+    return links;
 }
 

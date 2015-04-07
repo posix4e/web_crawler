@@ -7,9 +7,6 @@
 #include <iostream>
 #include "URLFinder.h"
 
-static std::string readBuffer;
-
-size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 
 /**
  * This class is responsible for actually downloading web pages. It uses a URLFinder
@@ -17,16 +14,21 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
  * //TODO we could move out the urlsVisited and getURLS behavior out.
  *
  */
-Curler::Curler(char const *url, std::set<std::string> urlsVisited) :
+
+static size_t staticFunction(void *buffer, size_t size, size_t nmemb, void *f) {
+    return static_cast<Curler *>(f)->nonStaticFunction(buffer, size, nmemb, f);
+}
+Curler::Curler(const char *url,
+               std::set<std::string> urlsVisited) :
         urlsVisited_(urlsVisited) {
-    readBuffer.clear();
+    std::cerr << "We are now downloading" << url << std::endl;
     CURL *curl;
     CURLcode res;
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, staticFunction);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    std::cerr << "We are now downloading" << url << std::endl;
     res = curl_easy_perform(curl);
     /* Check for errors */
     if (res != CURLE_OK)
@@ -35,15 +37,16 @@ Curler::Curler(char const *url, std::set<std::string> urlsVisited) :
 
     /* always cleanup */
     curl_easy_cleanup(curl);
+    std::cerr << "We are done downloading" << url << std::endl;
+
 }
 
 std::vector<std::string> Curler::getURLS() {
-    URLFinder urlFinder(readBuffer, this->urlsVisited_);
+    URLFinder urlFinder(this->readBuffer_, this->urlsVisited_);
     return urlFinder.getNewURLS();
 }
 
-size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-    size_t realsize = size * nmemb;
-    readBuffer.append((char const *) contents, realsize);
-    return realsize;
+size_t Curler::nonStaticFunction(void *pVoid, size_t i, size_t i1, void *pVoid1) {
+    readBuffer_.append((char const *) pVoid, i * i1);
+    return i * i1;
 }
