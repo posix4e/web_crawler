@@ -44,6 +44,7 @@ static std::vector<std::string> search_for_links(GumboNode* node) {
             }
         }
     }
+
     return links;
 }
 

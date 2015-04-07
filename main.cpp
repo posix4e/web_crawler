@@ -3,31 +3,41 @@
 #include <set>
 #include <vector>
 #include <future>
-#include <stack>
+#include <boost/lockfree/stack.hpp>
 #include "Curler.h"
 
 namespace {
-    unsigned long NUMBER_OF_DOWNLOADERS = 10000;
+    unsigned long NUMBER_OF_DOWNLOADERS = 1000;
 }
 
+long numberOfDownloaders = 0;
 bool stopped = false;
 std::set<std::string> urlsVisited;
 std::set<std::string> websitesToVisit;
+boost::lockfree::stack<std::string *> websitesToVisitStack(10240);
 
 std::string enqueLinks(std::string url) {
     if (urlsVisited.count(url) != 0) {
         return "";
     }
     for (auto newUrl:Curler(url.c_str(), urlsVisited).getURLS()) {
-        if (urlsVisited.count(newUrl) == 0 || websitesToVisit.count(newUrl) == 0) {
-            websitesToVisit.insert(newUrl);
+        if (newUrl.compare(0, 5, "http:") == 0) {
+            if (urlsVisited.count(newUrl) == 0
+                || websitesToVisit.count(newUrl) == 0) {
+                websitesToVisit.insert(newUrl);
+                while (!websitesToVisitStack.push(new std::string(newUrl))) {
+                    std::cout << "failed to push" << newUrl << std::endl;
+                }
+            }
         }
     }
     urlsVisited.insert(url);
+    numberOfDownloaders--;
     return "";
 }
 
 std::future<std::string> lookForNewLinks(std::string url) {
+    numberOfDownloaders++;
     return std::async(std::launch::async, enqueLinks, url);
 }
 
@@ -37,24 +47,33 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Could not init cURL\n");
         return 1;
     }
-    // The watcher watches for new websites to download
-    std::stack<std::future<std::string>> futures;
+    std::vector<std::future<std::string>> futures;
 
     std::string firstUrl = "http://www.google.com/";
     std::vector<std::string> firstLinks = Curler(firstUrl.c_str(), urlsVisited).getURLS();
     for (auto url:firstLinks) {
-        futures.push(lookForNewLinks(url));
+        futures.push_back(lookForNewLinks(url));
     }
 
-    while (!websitesToVisit.empty() || futures.size() > 0) {
-        if (!websitesToVisit.empty() && futures.size() < NUMBER_OF_DOWNLOADERS) {
-            if (urlsVisited.count(*websitesToVisit.begin()) == 0) {
-                futures.push(lookForNewLinks(*websitesToVisit.begin()));
+    while (!websitesToVisitStack.empty() || futures.size() > 0) {
+        if (!websitesToVisitStack.empty() && futures.size() < NUMBER_OF_DOWNLOADERS) {
+            std::string *newUrl;
+            if (websitesToVisitStack.pop(newUrl)) {
+                std::string newUrlCopy = *newUrl;
+                delete(newUrl);
+                if (urlsVisited.count(newUrlCopy) == 0 || websitesToVisit.count(newUrlCopy) == 0) {
+                    futures.push_back(lookForNewLinks(newUrlCopy));
+                }
+            } else {
+                std::cout << "nothing to pop" << std::endl;
             }
-            websitesToVisit.erase(websitesToVisit.begin());
         } else if (futures.size() > 0) {
-            futures.top().wait_for(std::chrono::seconds(1));
-            futures.pop();
+            size_t halfPos = futures.size() / 2;
+            std::vector<std::future<std::string>> futuresToProcess;
+            futures.swap(futuresToProcess);
+            while(numberOfDownloaders > NUMBER_OF_DOWNLOADERS){
+                std::cout << "Waiting for downloaders to catch up" << numberOfDownloaders << std::endl;
+            }
         } else {
             std::cout << "Doing nothing" << std::endl;
         }
