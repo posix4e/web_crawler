@@ -18,10 +18,11 @@
 static size_t staticFunction(void *buffer, size_t size, size_t nmemb, void *f) {
     return static_cast<Curler *>(f)->nonStaticFunction(buffer, size, nmemb, f);
 }
+
 Curler::Curler(const char *url,
                std::set<std::string> urlsVisited) :
         urlsVisited_(urlsVisited) {
-    std::cerr << "<" ;
+    std::cerr << "<";
     CURL *curl;
     CURLcode res;
     curl = curl_easy_init();

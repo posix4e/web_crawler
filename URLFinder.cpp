@@ -24,21 +24,21 @@ void URLFinder::appendInput(const std::string newInput) {
     input.append(newInput);
 }
 
-static std::vector<std::string> search_for_links(GumboNode* node) {
+static std::vector<std::string> search_for_links(GumboNode *node) {
     std::vector<std::string> links;
     if (node->type != GUMBO_NODE_ELEMENT) {
         return links;
     }
-    GumboAttribute* href;
+    GumboAttribute *href;
     if (node->v.element.tag == GUMBO_TAG_A &&
         (href = gumbo_get_attribute(&node->v.element.attributes, "href"))) {
         links.push_back(href->value);
     }
 
-    GumboVector* children = &node->v.element.children;
+    GumboVector *children = &node->v.element.children;
     for (unsigned int i = 0; i < children->length; ++i) {
-        std::vector<std::string> childrenLinks = search_for_links(static_cast<GumboNode*>(children->data[i]));
-        for (auto url:childrenLinks){
+        std::vector<std::string> childrenLinks = search_for_links(static_cast<GumboNode *>(children->data[i]));
+        for (auto url:childrenLinks) {
             if (url.find("http") == 0) {
                 links.push_back(url);
             }
@@ -49,7 +49,7 @@ static std::vector<std::string> search_for_links(GumboNode* node) {
 }
 
 std::vector<std::string> const URLFinder::getNewURLS() {
-    GumboOutput* output = gumbo_parse(this->input.c_str());
+    GumboOutput *output = gumbo_parse(this->input.c_str());
 
     std::vector<std::string> links = search_for_links(output->root);
     gumbo_destroy_output(&kGumboDefaultOptions, output);

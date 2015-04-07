@@ -21,4 +21,5 @@ public:
 
     size_t nonStaticFunction(void *pVoid, size_t i, size_t i1, void *pVoid1);
 };
+
 #endif //WEB_CRAWLER_CURLER_H
