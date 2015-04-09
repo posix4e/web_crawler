@@ -11,7 +11,6 @@ namespace {
 }
 
 long numberOfDownloaders = 0;
-bool stopped = false;
 std::set<std::string> urlsVisited;
 std::set<std::string> websitesToVisit;
 boost::lockfree::stack<std::string *> websitesToVisitStack(10240);
@@ -78,5 +77,4 @@ int main(int argc, char *argv[]) {
         }
 
     }
-    stopped = true;
 }

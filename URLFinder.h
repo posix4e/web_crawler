@@ -5,9 +5,6 @@
 #ifndef WEB_CRAWLER_PARSER_H
 #define WEB_CRAWLER_PARSER_H
 
-
-#include <bits/stl_set.h>
-
 class URLFinder {
     std::string input;
     std::set<std::string> urlsVisited;
@@ -17,7 +14,6 @@ public:
 
     std::vector<std::string> const getNewURLS();
 
-    void appendInput(std::string const);
 };
 
 

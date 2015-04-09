@@ -3,7 +3,7 @@ enable_testing()
 project(web_crawler)
 option(web_crawler_build_tests "Build all of web_crawler's unit tests." OFF)
 set(SOURCE_FILES main.cpp)
-add_executable(web_crawler ${SOURCE_FILES} URLFinder.cpp URLFinder.h Curler.cpp Curler.h)
+add_executable(web_crawler ${SOURCE_FILES} URLFinder.h Curler.cpp Curler.h)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package (CURL)

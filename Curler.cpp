@@ -1,12 +1,8 @@
-//
-// Created by posix4e on 4/5/15.
-//
-
 #include "Curler.h"
 #include <curl/curl.h>
 #include <iostream>
 #include "URLFinder.h"
-
+#include "gumbo.h"
 
 /**
  * This class is responsible for actually downloading web pages. It uses a URLFinder
@@ -19,8 +15,7 @@ static size_t staticFunction(void *buffer, size_t size, size_t nmemb, void *f) {
     return static_cast<Curler *>(f)->nonStaticFunction(buffer, size, nmemb, f);
 }
 
-Curler::Curler(const char *url,
-               std::set<std::string> urlsVisited) :
+Curler::Curler(const char *url, std::set<std::string> urlsVisited) :
         urlsVisited_(urlsVisited) {
     std::cerr << "<";
     CURL *curl;
@@ -40,7 +35,6 @@ Curler::Curler(const char *url,
     /* always cleanup */
     curl_easy_cleanup(curl);
     std::cerr << ">";
-
 }
 
 std::vector<std::string> Curler::getURLS() {
@@ -52,3 +46,43 @@ size_t Curler::nonStaticFunction(void *pVoid, size_t i, size_t i1, void *pVoid1)
     readBuffer_.append((char const *) pVoid, i * i1);
     return i * i1;
 }
+
+/*
+ * A class which gets all of the links out of a webpage
+ */
+URLFinder::URLFinder(std::string inputString,
+                     std::set<std::string> &urlsAlreadyVisited) {
+    this->input = inputString;
+    this->urlsVisited = urlsAlreadyVisited;
+}
+
+static std::vector<std::string> search_for_links(GumboNode *node) {
+    std::vector<std::string> links;
+    if (node->type != GUMBO_NODE_ELEMENT) {
+        return links;
+    }
+    GumboAttribute *href;
+    if (node->v.element.tag == GUMBO_TAG_A &&
+        (href = gumbo_get_attribute(&node->v.element.attributes, "href"))) {
+        links.push_back(href->value);
+    }
+
+    GumboVector *children = &node->v.element.children;
+    for (unsigned int i = 0; i < children->length; ++i) {
+        std::vector<std::string> childrenLinks = search_for_links(static_cast<GumboNode *>(children->data[i]));
+        for (auto url:childrenLinks) {
+            if (url.find("http") == 0) {
+                links.push_back(url);
+            }
+        }
+    }
+    return links;
+}
+
+std::vector<std::string> const URLFinder::getNewURLS() {
+    GumboOutput *output = gumbo_parse(this->input.c_str());
+    std::vector<std::string> links = search_for_links(output->root);
+    gumbo_destroy_output(&kGumboDefaultOptions, output);
+    return links;
+}
+
