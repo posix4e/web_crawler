@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     }
 
     getAllWebsitesRecursively(futures);
+    return 0;
 }
 
 void getAllWebsitesRecursively(std::vector<std::future<std::string>> &futures) {
