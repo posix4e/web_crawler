@@ -10,9 +10,8 @@ class URLFinder {
     std::set<std::string> urlsVisited;
 
 public:
-    URLFinder(std::string string, std::set<std::string> &set);
-
-    std::vector<std::string> const getNewURLS();
+    URLFinder(std::string, std::set<std::string> &);
+    std::vector<std::string> const newUrls();
 
 };
 

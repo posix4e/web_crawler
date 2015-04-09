@@ -5,9 +5,8 @@
 #include "gumbo.h"
 
 /**
- * This class is responsible for actually downloading web pages. It uses a URLFinder
- * so that way don't need to return the actual webpage content.
- * //TODO we could move out the urlsVisited and getURLS behavior out.
+ * This class is responsible for actually downloading web pages. It uses a class URLFinder below it
+ * so that way don't need to worry about parsing webpges
  *
  */
 
@@ -39,7 +38,7 @@ Curler::Curler(const char *url, std::set<std::string> urlsVisited) :
 
 std::vector<std::string> Curler::getURLS() {
     URLFinder urlFinder(this->readBuffer_, this->urlsVisited_);
-    return urlFinder.getNewURLS();
+    return urlFinder.newUrls();
 }
 
 size_t Curler::nonStaticFunction(void *pVoid, size_t i, size_t i1, void *pVoid1) {
@@ -79,7 +78,7 @@ static std::vector<std::string> search_for_links(GumboNode *node) {
     return links;
 }
 
-std::vector<std::string> const URLFinder::getNewURLS() {
+std::vector<std::string> const URLFinder::newUrls() {
     GumboOutput *output = gumbo_parse(this->input.c_str());
     std::vector<std::string> links = search_for_links(output->root);
     gumbo_destroy_output(&kGumboDefaultOptions, output);
