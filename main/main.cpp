@@ -15,6 +15,8 @@ std::set<std::string> urlsVisited;
 std::set<std::string> websitesToVisit;
 boost::lockfree::stack<std::string *> websitesToVisitStack(10240);
 
+void getAllWebsitesRecursively(std::vector<std::future<std::string>> &futures);
+
 std::string enqueLinks(std::string url) {
     if (urlsVisited.count(url) != 0) {
         return "";
@@ -47,13 +49,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     std::vector<std::future<std::string>> futures;
-
-    std::string firstUrl = "http://www.google.com/";
-    std::vector<std::string> firstLinks = Curler(firstUrl.c_str(), urlsVisited).getURLS();
-    for (auto url:firstLinks) {
-        futures.push_back(lookForNewLinks(url));
+    std::string firstUrl = "http://www.google.com/"; // Keep the seed locked at google for now
+    std::vector<std::string> seedLinks = Curler(firstUrl.c_str(), urlsVisited).getURLS();
+    for (auto seedLink:seedLinks) {
+        futures.push_back(lookForNewLinks(seedLink));
     }
 
+    getAllWebsitesRecursively(futures);
+}
+
+void getAllWebsitesRecursively(std::vector<std::future<std::string>> &futures) {
     while (!websitesToVisitStack.empty() || futures.size() > 0) {
         if (!websitesToVisitStack.empty() && futures.size() < NUMBER_OF_DOWNLOADERS) {
             std::string *newUrl;
